@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Milky - Pengingat Makan & Susu Kucing</title>
+    <meta name="description"
+        content="Aplikasi seluler pengingat makan dan susu untuk Milky si kucing kesayangan, pantau nutrisi harian, jadwal alarm, dan catatan aktivitas.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- Preview Switcher Control (Desktop helper) -->
+    <header class="preview-controls" aria-label="Mode Tampilan">
+        <span style="font-size:0.8rem; font-weight:600;">Mode Pratinjau:</span>
+        <button id="btnViewPhone" class="active" onclick="toggleViewMode('phone')">📱 Frame HP</button>
+        <button id="btnViewFull" onclick="toggleViewMode('fullscreen')">💻 Layar Responsif</button>
+    </header>
+
+    <!-- Mobile Device Shell Wrapper -->
+    <main class="mobile-device-wrapper">
+
+        <!-- Phone Notch / Dynamic Island -->
+        <div class="phone-island">
+            <div class="island-camera"></div>
+            <div class="island-sensor"></div>
+        </div>
+
+        <!-- App Viewport Canvas -->
+        <div class="app-viewport">
+
+            <!-- iOS Status Bar -->
+            <div class="status-bar">
+                <span id="livePhoneClock">09:41</span>
+                <div class="status-bar-icons">
+                    <!-- Signal Icon -->
+                    <svg width="15" height="11" viewBox="0 0 16 12" fill="currentColor">
+                        <rect x="0" y="8" width="2.5" height="4" rx="0.5" />
+                        <rect x="4" y="6" width="2.5" height="6" rx="0.5" />
+                        <rect x="8" y="3" width="2.5" height="9" rx="0.5" />
+                        <rect x="12" y="0" width="2.5" height="12" rx="0.5" />
+                    </svg>
+                    <!-- Wifi Icon -->
+                    <svg width="15" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round">
+                        <path d="M5 12.55a11 11 0 0 1 14.08 0" />
+                        <path d="M1.42 9a16 16 0 0 1 21.16 0" />
+                        <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+                        <circle cx="12" cy="20" r="1" fill="currentColor" />
+                    </svg>
+                    <!-- Battery Icon -->
+                    <svg width="22" height="12" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="1.8"
+                        rx="3">
+                        <rect x="1" y="1" width="19" height="10" rx="2" />
+                        <rect x="3" y="3" width="14" height="6" rx="1" fill="currentColor" />
+                        <path d="M22 4v4" stroke-linecap="round" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Toast Feedback Notification -->
+            <div id="toastNotice" class="toast-notice">
+                <span id="toastIcon" class="toast-icon">✨</span>
+                <span id="toastMsg">Notifikasi Pengingat Aktif</span>
+            </div>
+
+            <!-- App Scrollable Content Area -->
+            <div class="app-content">
+
+                <!-- ====================================================
+             HALAMAN 1: DASHBOARD
+             ==================================================== -->
+                <section id="page-dashboard" class="page-view active">
+
+                    <!-- Header: Sapaan Pengguna & Notifikasi -->
+                    <div class="app-header">
+                        <div class="user-greeting">
+                            <h4 id="userGreetingText">☀️ Selamat Pagi, Kak!</h4>
+                            <h2>Milky Daily 🐾</h2>
+                        </div>
+                        <button class="header-action-btn"
+                            onclick="showToast('Jadwal susu berikutnya untuk Milky pukul 11:30 WIB', '🔔')"
+                            aria-label="Notifikasi">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            </svg>
+                            <div class="notif-badge"></div>
+                        </button>
+                    </div>
+
+                    <!-- Profil Singkat Milky (Single Pet View) -->
+                    <div class="section-title-row">
+                        <h3 class="section-title">Kucing Kesayangan</h3>
+                        <span class="section-link" onclick="switchPage('profile')">Buka Profil &rarr;</span>
+                    </div>
+                    <div id="petChipsContainer">
+                        <!-- Milky Card generated via JS -->
+                    </div>
+
+                    <!-- Banner Pengingat Berikutnya -->
+                    <div class="next-alarm-banner">
+                        <div class="alarm-tag">
+                            <span>⏰ Jadwal Terdekat</span>
+                        </div>
+                        <div class="alarm-time-row">
+                            <span class="alarm-time-main" id="nextAlarmTime">11:30</span>
+                            <span class="alarm-countdown">Dalam 45 Menit</span>
+                        </div>
+                        <div class="alarm-desc">
+                            <span>🍼</span>
+                            <span id="nextAlarmDesc">Susu Siang Milky (60 ml KMR)</span>
+                        </div>
+                        <button class="alarm-quick-btn" onclick="quickRecordAction('milk')">
+                            <span>+ Beri Susu Milky</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
+                                <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Ringkasan Progres Harian: Makan & Susu -->
+                    <div class="section-title-row">
+                        <h3 class="section-title">Progres Hari Ini</h3>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">Target Nutrisi Milky</span>
+                    </div>
+
+                    <div class="progress-grid">
+                        <!-- Kartu Progres Susu -->
+                        <div class="progress-card milk">
+                            <div class="progress-card-header">
+                                <div class="icon-badge milk">🍼</div>
+                                <span class="progress-percent-badge" id="dashMilkPercent">75%</span>
+                            </div>
+                            <div class="progress-info">
+                                <h3 id="dashMilkRatio">3 / 4 Sesi</h3>
+                                <p id="dashMilkSub">180 ml dari 240 ml</p>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="dashMilkBar" style="width: 75%;"></div>
+                            </div>
+                            <div class="progress-footer">
+                                <span>Asupan Susu</span>
+                                <span style="font-weight:700;">KMR Kitten</span>
+                            </div>
+                        </div>
+
+                        <!-- Kartu Progres Makan -->
+                        <div class="progress-card food">
+                            <div class="progress-card-header">
+                                <div class="icon-badge food">🥩</div>
+                                <span class="progress-percent-badge" id="dashFoodPercent">66%</span>
+                            </div>
+                            <div class="progress-info">
+                                <h3 id="dashFoodRatio">2 / 3 Porsi</h3>
+                                <p id="dashFoodSub">60 gr dari 90 gr</p>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="dashFoodBar" style="width: 66%;"></div>
+                            </div>
+                            <div class="progress-footer">
+                                <span>Asupan Makanan</span>
+                                <span style="font-weight:700;">Wet Food</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Aksi Cepat -->
+                    <div class="quick-action-strip">
+                        <button class="quick-action-btn" onclick="quickRecordAction('milk')">
+                            <span class="emoji">🍼</span>
+                            <span class="label">+ Susu</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="quickRecordAction('food')">
+                            <span class="emoji">🥩</span>
+                            <span class="label">+ Makan</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="quickRecordAction('snack')">
+                            <span class="emoji">🍪</span>
+                            <span class="label">+ Camilan</span>
+                        </button>
+                    </div>
+
+                    <!-- Daftar Aktivitas Terakhir -->
+                    <div class="section-title-row">
+                        <h3 class="section-title">Aktivitas Terakhir Milky</h3>
+                        <span class="section-link" onclick="switchPage('record')">+ Catat Baru</span>
+                    </div>
+
+                    <div class="activity-list" id="recentActivitiesList">
+                        <!-- Populated via JS -->
+                    </div>
+
+                </section>
+
+                <!-- ====================================================
+             HALAMAN 2: PROFIL HEWAN (MILKY)
+             ==================================================== -->
+                <section id="page-profile" class="page-view">
+
+                    <div class="app-header">
+                        <div>
+                            <h4 style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">Data Kucing</h4>
+                            <h2 style="font-size:1.32rem; font-weight:800; color:var(--text-main);">Profil Milky 🐱</h2>
+                        </div>
+                        <button class="header-action-btn" onclick="openEditProfileModal()" title="Edit Profil">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Profile Hero Card -->
+                    <div class="profile-hero-card">
+                        <div class="profile-avatar-container"
+                            onclick="document.getElementById('directAvatarInput').click()"
+                            title="Klik untuk mengganti foto profil Milky">
+                            <img id="profileAvatarImg" class="profile-avatar-img"
+                                src="https://images.unsplash.com/photo-1574158622682-e40e69881006?auto=format&fit=crop&w=400&q=80"
+                                alt="Milky si Kucing">
+                            <div class="profile-avatar-edit-badge" title="Ganti Foto Profil">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5">
+                                    <path
+                                        d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
+                                    </path>
+                                    <circle cx="12" cy="13" r="4"></circle>
+                                </svg>
+                            </div>
+                            <div class="profile-status-dot" title="Kondisi Sehat"></div>
+                        </div>
+                        <input type="file" id="directAvatarInput" accept="image/*" style="display:none;"
+                            onchange="handleDirectAvatarUpload(event)">
+
+                        <h3 class="profile-pet-name" id="profilePetName">Milky</h3>
+                        <p class="profile-pet-breed" id="profilePetBreed">Kucing • British Shorthair Kitten</p>
+
+                        <div style="margin-top: 8px;">
+                            <span id="profileStatusText"
+                                style="display:inline-block; font-size:0.75rem; font-weight:700; color:#059669; background:#D1FAE5; padding: 3px 12px; border-radius: 999px;">
+                                🟢 Sehat, Manja & Aktif
+                            </span>
+                        </div>
+
+                        <!-- Pet Stats Grid -->
+                        <div class="pet-stats-row">
+                            <div class="pet-stat-box">
+                                <div class="pet-stat-label">Umur</div>
+                                <div class="pet-stat-value" id="profileStatAge">2.5 Bulan</div>
+                            </div>
+                            <div class="pet-stat-box">
+                                <div class="pet-stat-label">Berat Badan</div>
+                                <div class="pet-stat-value" id="profileStatWeight">1.2 kg</div>
+                            </div>
+                            <div class="pet-stat-box">
+                                <div class="pet-stat-label">Kelamin</div>
+                                <div class="pet-stat-value" id="profileStatGender">Betina</div>
+                            </div>
+                        </div>
+
+                        <div class="profile-actions">
+                            <button class="btn-primary-outline" onclick="openEditProfileModal()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M12 20h9"></path>
+                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                </svg>
+                                <span>Edit Profil Milky</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Kebutuhan Nutrisi & Target -->
+                    <div class="nutrition-card">
+                        <h3 class="section-title"
+                            style="margin-bottom: 12px; display:flex; align-items:center; gap:6px;">
+                            <span>🥗 Kebutuhan Nutrisi Milky</span>
+                        </h3>
+
+                        <div class="nutrition-row">
+                            <div class="nutrition-label">
+                                <span class="emoji">🍼</span>
+                                <span>Target Susu KMR Harian</span>
+                            </div>
+                            <span class="nutrition-val" id="nutTargetMilk">4x Sehari (240 ml)</span>
+                        </div>
+
+                        <div class="nutrition-row">
+                            <div class="nutrition-label">
+                                <span class="emoji">🥩</span>
+                                <span>Target Porsi Makanan Basah</span>
+                            </div>
+                            <span class="nutrition-val" id="nutTargetFood">3x Sehari (90 gr)</span>
+                        </div>
+
+                        <div class="nutrition-row">
+                            <div class="nutrition-label">
+                                <span class="emoji">💧</span>
+                                <span>Asupan Air Bersih</span>
+                            </div>
+                            <span class="nutrition-val">Tersedia Setiap Saat</span>
+                        </div>
+
+                        <div class="nutrition-note">
+                            <strong>Catatan Khusus Dokter Hewan:</strong><br>
+                            <span id="nutNotesText">Gunakan Kitten Milk Replacer (KMR) bebas laktosa hangat kuku
+                                (~36-38°C). Jangan berikan susu sapi biasa.</span>
+                        </div>
+                    </div>
+
+                    <!-- Galeri Foto Milky -->
+                    <div class="gallery-header">
+                        <h3 class="section-title">Galeri Foto Milky 📸</h3>
+                        <span class="section-link" onclick="document.getElementById('galleryFileInput').click()">+
+                            Tambah Foto</span>
+                    </div>
+
+                    <input type="file" id="galleryFileInput" accept="image/*" style="display:none;"
+                        onchange="handleGalleryUpload(event)">
+
+                    <div class="gallery-grid" id="profileGalleryGrid">
+                        <!-- Populated via JS -->
+                    </div>
+
+                </section>
+
+                <!-- ====================================================
+             HALAMAN 3: CATAT AKTIVITAS
+             ==================================================== -->
+                <section id="page-record" class="page-view">
+
+                    <div class="app-header">
+                        <div>
+                            <h4 style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">Jurnal Harian</h4>
+                            <h2 style="font-size:1.32rem; font-weight:800; color:var(--text-main);">Catat Aktivitas</h2>
+                        </div>
+                        <button class="header-action-btn" onclick="switchPage('dashboard')"
+                            title="Kembali ke Dashboard">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <form class="form-card" onsubmit="saveActivity(event)">
+
+                        <!-- Target Catatan: Khusus Milky -->
+                        <div class="pet-record-target">
+                            <span style="font-size:1.1rem;">🐱</span>
+                            <span>Catatan Nutrisi Khusus: <strong>Milky</strong> (Kucing Kesayangan)</span>
+                        </div>
+
+                        <!-- Pilih Jenis Aktivitas -->
+                        <div class="form-group">
+                            <label class="form-label">Jenis Aktivitas</label>
+                            <div class="activity-type-selector">
+                                <div class="type-btn active type-milk" data-type="milk"
+                                    onclick="setActivityType('milk')">
+                                    <span class="emoji">🍼</span>
+                                    <span class="label">Susu KMR</span>
+                                </div>
+                                <div class="type-btn type-food" data-type="food" onclick="setActivityType('food')">
+                                    <span class="emoji">🥩</span>
+                                    <span class="label">Makanan</span>
+                                </div>
+                                <div class="type-btn type-snack" data-type="snack" onclick="setActivityType('snack')">
+                                    <span class="emoji">🍪</span>
+                                    <span class="label">Camilan</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Takaran / Porsi Cepat -->
+                        <div class="form-group">
+                            <label class="form-label" id="formPortionLabel" for="formPortionInput">Takaran Susu KMR
+                                (ml):</label>
+                            <input type="text" id="formPortionInput" class="form-input" value="60 ml"
+                                placeholder="Contoh: 60 ml atau 30 gram" required>
+
+                            <div class="quick-portions" id="quickPortionContainer">
+                                <div class="portion-chip" onclick="setPortion('40 ml')">40 ml</div>
+                                <div class="portion-chip active" onclick="setPortion('60 ml')">60 ml</div>
+                                <div class="portion-chip" onclick="setPortion('80 ml')">80 ml</div>
+                                <div class="portion-chip" onclick="setPortion('100 ml')">100 ml</div>
+                            </div>
+                        </div>
+
+                        <!-- Pilihan Waktu -->
+                        <div class="form-group">
+                            <label class="form-label" for="formTimeInput">Waktu Pemberian</label>
+                            <input type="time" id="formTimeInput" class="form-input" required>
+                            <div class="time-presets">
+                                <button type="button" class="time-preset-btn active" data-preset="now"
+                                    onclick="setTimePreset('now')">Baru Saja</button>
+                                <button type="button" class="time-preset-btn" data-preset="15m"
+                                    onclick="setTimePreset('15m')">15 Mnt Lalu</button>
+                                <button type="button" class="time-preset-btn" data-preset="1h"
+                                    onclick="setTimePreset('1h')">1 Jam Lalu</button>
+                            </div>
+                        </div>
+
+                        <!-- Catatan Tambahan -->
+                        <div class="form-group">
+                            <label class="form-label" for="formNoteInput">Catatan & Respon Milky (Opsional)</label>
+                            <textarea id="formNoteInput" class="form-textarea"
+                                placeholder="Contoh: Minum lahap, langsung mendengkur dan bersendawa..."></textarea>
+                        </div>
+
+                        <!-- Tombol Simpan -->
+                        <button type="submit" class="btn-submit-activity">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            <span>Simpan Catatan untuk Milky</span>
+                        </button>
+                    </form>
+
+                </section>
+
+                <!-- ====================================================
+             HALAMAN 4: ATUR JADWAL & ALARM
+             ==================================================== -->
+                <section id="page-schedule" class="page-view">
+
+                    <div class="app-header">
+                        <div>
+                            <h4 style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">Pengingat Rutin</h4>
+                            <h2 style="font-size:1.32rem; font-weight:800; color:var(--text-main);">Jadwal & Alarm Milky
+                            </h2>
+                        </div>
+                        <button class="header-action-btn" onclick="openModal('modalAddSchedule')" title="Tambah Jadwal">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Master Alarm Switch Banner -->
+                    <div class="schedule-hero-banner">
+                        <div class="master-alarm-text">
+                            <h4>🔔 Master Alarm & Notifikasi</h4>
+                            <p>Bunyikan alarm pengingat makan & susu Milky</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="masterAlarmToggle" checked
+                                onchange="toggleMasterAlarms(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <!-- Info Box Pengingat Susu -->
+                    <div
+                        style="background:var(--milk-light); border-left: 4px solid var(--milk-blue); padding:12px 14px; border-radius:12px; margin-bottom:18px; font-size:0.75rem; color:#0369A1;">
+                        🍼 <strong>Pengingat Susu Aktif:</strong> Interval ideal kitten Milky (2.5 bulan) adalah setiap
+                        3.5 - 4 jam untuk menjaga hidrasi dan energi tetap prima.
+                    </div>
+
+                    <!-- Section Title -->
+                    <div class="section-title-row">
+                        <h3 class="section-title">Jadwal Harian Milky</h3>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">Setiap Hari</span>
+                    </div>
+
+                    <!-- Daftar Jadwal Card -->
+                    <div class="schedule-list" id="scheduleListContainer">
+                        <!-- Populated via JS -->
+                    </div>
+
+                    <!-- Tombol Tambah Jadwal Baru -->
+                    <button class="btn-add-schedule" onclick="openModal('modalAddSchedule')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="16"></line>
+                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                        <span>+ Tambah Jadwal Baru</span>
+                    </button>
+
+                </section>
+
+            </div> <!-- /app-content -->
+
+            <!-- ====================================================
+           BOTTOM NAVIGATION BAR
+           ==================================================== -->
+            <nav class="bottom-nav">
+                <!-- Tab 1: Dashboard -->
+                <button class="nav-item active" data-page="dashboard" onclick="switchPage('dashboard')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    <span>Dashboard</span>
+                </button>
+
+                <!-- Tab 2: Profil -->
+                <button class="nav-item" data-page="profile" onclick="switchPage('profile')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="7" r="4"></circle>
+                        <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path>
+                    </svg>
+                    <span>Profil</span>
+                </button>
+
+                <!-- Tab 3: Catat (Center Highlight Button) -->
+                <button class="nav-item nav-highlight" data-page="record" onclick="switchPage('record')">
+                    <div class="highlight-bubble">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </div>
+                    <span>Catat</span>
+                </button>
+
+                <!-- Tab 4: Jadwal -->
+                <button class="nav-item" data-page="schedule" onclick="switchPage('schedule')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span>Jadwal</span>
+                </button>
+            </nav>
+            <div class="home-indicator-bar"></div>
+
+            <!-- ====================================================
+           MODAL 1: EDIT PROFIL HEWAN (MILKY)
+           ==================================================== -->
+            <div id="modalEditProfile" class="modal-overlay">
+                <div class="modal-sheet">
+                    <div class="modal-drag-bar"></div>
+                    <div class="modal-header">
+                        <h3>Edit Profil Milky</h3>
+                        <button class="btn-close-modal" onclick="closeModal('modalEditProfile')">&times;</button>
+                    </div>
+
+                    <form onsubmit="handleSaveProfile(event)">
+                        <!-- Ganti Foto Profil Utama -->
+                        <div class="form-group">
+                            <label class="form-label">Foto Profil Milky</label>
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <img id="editPetAvatarPreview"
+                                    src="https://images.unsplash.com/photo-1574158622682-e40e69881006?auto=format&fit=crop&w=400&q=80"
+                                    alt="Avatar Milky"
+                                    style="width:52px; height:52px; border-radius:50%; object-fit:cover; border:2.5px solid var(--primary); box-shadow:0 2px 8px rgba(2,132,199,0.2);">
+                                <button type="button" class="btn-primary-outline" style="flex:1;"
+                                    onclick="document.getElementById('editAvatarFileInput').click()">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path
+                                            d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
+                                        </path>
+                                        <circle cx="12" cy="13" r="4"></circle>
+                                    </svg>
+                                    <span>Pilih Foto Baru</span>
+                                </button>
+                            </div>
+                            <input type="file" id="editAvatarFileInput" accept="image/*" style="display:none;"
+                                onchange="handleModalAvatarUpload(event)">
+                        </div>
+
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div class="form-group">
+                                <label class="form-label" for="editPetName">Nama Kucing</label>
+                                <input type="text" id="editPetName" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="editPetGender">Jenis Kelamin</label>
+                                <select id="editPetGender" class="form-select">
+                                    <option value="Betina">Betina ♀</option>
+                                    <option value="Jantan">Jantan ♂</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="editPetBreed">Jenis & Ras</label>
+                            <input type="text" id="editPetBreed" class="form-input" required>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div class="form-group">
+                                <label class="form-label" for="editPetAge">Umur</label>
+                                <input type="text" id="editPetAge" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="editPetWeight">Berat Badan</label>
+                                <input type="text" id="editPetWeight" class="form-input" required>
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div class="form-group">
+                                <label class="form-label" for="editPetMilkVol">Target Susu (ml/hari)</label>
+                                <input type="number" id="editPetMilkVol" class="form-input" min="10" placeholder="240"
+                                    required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="editPetMilkSessions">Sesi Susu (kali/hari)</label>
+                                <input type="number" id="editPetMilkSessions" class="form-input" min="1" placeholder="4"
+                                    required>
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div class="form-group">
+                                <label class="form-label" for="editPetFoodWeight">Target Makanan (gr/hari)</label>
+                                <input type="number" id="editPetFoodWeight" class="form-input" min="10" placeholder="90"
+                                    required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="editPetFoodSessions">Sesi Makanan (kali/hari)</label>
+                                <input type="number" id="editPetFoodSessions" class="form-input" min="1" placeholder="3"
+                                    required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="editPetNotes">Catatan Khusus Dokter / Diet</label>
+                            <textarea id="editPetNotes" class="form-textarea"
+                                placeholder="Catatan susu/makanan khusus..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn-submit-activity" style="margin-top:10px;"
+                            onclick="handleSaveProfile(event)">
+                            Simpan Perubahan
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ====================================================
+           MODAL 2: TAMBAH JADWAL BARU
+           ==================================================== -->
+            <div id="modalAddSchedule" class="modal-overlay">
+                <div class="modal-sheet">
+                    <div class="modal-drag-bar"></div>
+                    <div class="modal-header">
+                        <h3>Tambah Jadwal & Alarm Milky</h3>
+                        <button class="btn-close-modal" onclick="closeModal('modalAddSchedule')">&times;</button>
+                    </div>
+
+                    <form onsubmit="handleAddSchedule(event)">
+                        <div class="pet-record-target" style="margin-bottom:14px;">
+                            <span style="font-size:1.1rem;">⏰</span>
+                            <span>Pasang Pengingat Rutin untuk: <strong>Milky 🐱</strong></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="addSchTime">Waktu Alarm (Jam:Menit)</label>
+                            <input type="time" id="addSchTime" class="form-input" value="12:00" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="addSchType">Jenis Pengingat</label>
+                            <select id="addSchType" class="form-select">
+                                <option value="milk">🍼 Susu KMR</option>
+                                <option value="food">🥩 Makanan Basah / Kibble</option>
+                                <option value="snack">🍪 Camilan / Vitamin</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="addSchTitle">Judul Jadwal</label>
+                            <input type="text" id="addSchTitle" class="form-input"
+                                placeholder="Contoh: Susu Siang Milky" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="addSchPortion">Takaran / Porsi</label>
+                            <input type="text" id="addSchPortion" class="form-input"
+                                placeholder="Contoh: 60 ml, 30 gram" required>
+                        </div>
+
+                        <button type="submit" class="btn-submit-activity" style="margin-top:10px;">
+                            Pasang Alarm Jadwal
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div> <!-- /app-viewport -->
+
+    </main> <!-- /mobile-device-wrapper -->
+
+    <script src="js/app.js"></script>
+</body>
+
+</html>
